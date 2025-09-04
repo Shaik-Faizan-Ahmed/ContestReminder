@@ -23,11 +23,25 @@ class ContestList extends _$ContestList {
     try {
       final contestService = ref.watch(contestServiceProvider);
       final contests = await contestService.getUpcomingContests();
+
+      
+
+      final now = DateTime.now();
+      final sevenDaysFromNow = now.add(const Duration(days: 7));
+      final allowedSites = ['leetcode.com', 'codechef.com', 'codeforces.com', 'hackerrank.com'];
+
+      final filteredContests = contests.where((contest) {
+        final contestDate = contest.startTime;
+        final isAllowedSite = allowedSites.contains(contest.platform);
+        return isAllowedSite &&
+            contestDate.isAfter(now) &&
+            contestDate.isBefore(sevenDaysFromNow);
+      }).toList();
       
       // Sort contests by start time
-      contests.sort((a, b) => a.startTime.compareTo(b.startTime));
+      filteredContests.sort((a, b) => a.startTime.compareTo(b.startTime));
       
-      return contests;
+      return filteredContests;
     } catch (e, stackTrace) {
       print('Error in ContestList.build: $e');
       print('Stack trace: $stackTrace');
@@ -96,11 +110,25 @@ class ContestList extends _$ContestList {
       state = const AsyncLoading();
       final contestService = ref.read(contestServiceProvider);
       final contests = await contestService.getUpcomingContests();
+
+      
+
+      final now = DateTime.now();
+      final sevenDaysFromNow = now.add(const Duration(days: 7));
+      final allowedSites = ['leetcode.com', 'codechef.com', 'codeforces.com', 'hackerrank.com'];
+
+      final filteredContests = contests.where((contest) {
+        final contestDate = contest.startTime;
+        final isAllowedSite = allowedSites.contains(contest.platform);
+        return isAllowedSite &&
+            contestDate.isAfter(now) &&
+            contestDate.isBefore(sevenDaysFromNow);
+      }).toList();
       
       // Sort contests by start time
-      contests.sort((a, b) => a.startTime.compareTo(b.startTime));
+      filteredContests.sort((a, b) => a.startTime.compareTo(b.startTime));
       
-      state = AsyncData(contests);
+      state = AsyncData(filteredContests);
     } catch (e, stackTrace) {
       print('Error refreshing contests: $e');
       state = AsyncError(e, stackTrace);
