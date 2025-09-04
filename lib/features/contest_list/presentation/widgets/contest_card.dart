@@ -128,77 +128,100 @@ class ContestCard extends ConsumerWidget {
                 
                 // Reminder button
                 FilledButton.icon(
-                  onPressed: isStarted ? null : () async {
-                    try {
-                      if (contest.isReminderSet) {
-                        // Show confirmation dialog
-                        final shouldCancel = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Confirm Cancellation'),
-                            content: Text(
-                              'Are you sure you want to cancel the reminder for "${contest.name}"?'
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(false),
-                                child: const Text('No'),
-                              ),
-                              FilledButton(
-                                onPressed: () => Navigator.of(context).pop(true),
-                                child: const Text('Yes'),
-                              ),
-                            ],
-                          ),
-                        );
-                        
-                        if (shouldCancel == true) {
-                          await ref
-                              .read(contestListProvider.notifier)
-                              .cancelReminder(contest);
-                          
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Reminder cancelled'),
-                                backgroundColor: Colors.orange,
+                  onPressed: isStarted
+                      ? null
+                      : () async {
+                          if (contest.isReminderSet) {
+                            // Cancel reminder logic
+                            final shouldCancel = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Confirm Cancellation'),
+                                content: Text(
+                                    'Are you sure you want to cancel the reminder for "${contest.name}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('No'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text('Yes'),
+                                  ),
+                                ],
                               ),
                             );
+
+                            if (shouldCancel == true) {
+                              try {
+                                await ref
+                                    .read(contestListProvider.notifier)
+                                    .cancelReminder(contest);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Reminder cancelled'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Failed to cancel reminder: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
+                          } else {
+                            // Show set reminder dialog
+                            final reminderMinutes =
+                                await _showSetReminderDialog(context);
+                            if (reminderMinutes != null) {
+                              try {
+                                await ref
+                                    .read(contestListProvider.notifier)
+                                    .setReminder(contest, reminderMinutes);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                          Text(
+                                              'Reminder set! You\'ll be notified $reminderMinutes minutes before the contest.'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                          Text('Failed to set reminder: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            }
                           }
-                        }
-                      } else {
-                        await ref
-                            .read(contestListProvider.notifier)
-                            .setReminder(contest);
-                        
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Reminder set! You\'ll be notified 5 minutes before the contest.'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Failed to ${contest.isReminderSet ? 'cancel' : 'set'} reminder: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                        },
                   icon: Icon(
                     contest.isReminderSet ? Icons.alarm_on : Icons.alarm_add,
                     size: 16,
                   ),
-                  label: Text(contest.isReminderSet ? 'Cancel Reminder' : 'Set Reminder'),
+                  label: Text(contest.isReminderSet
+                      ? 'Cancel Reminder'
+                      : 'Set Reminder'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: contest.isReminderSet 
-                        ? Colors.orange 
+                    backgroundColor: contest.isReminderSet
+                        ? Colors.orange
                         : Theme.of(context).primaryColor,
                   ),
                 ),
@@ -206,6 +229,58 @@ class ContestCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<int?> _showSetReminderDialog(BuildContext context) {
+    final TextEditingController controller = TextEditingController(text: '5');
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Set Reminder'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Minutes before contest',
+              hintText: 'Enter minutes',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter minutes';
+              }
+              final minutes = int.tryParse(value);
+              if (minutes == null || minutes <= 0) {
+                return 'Please enter a positive number';
+              }
+              if (minutes > 10080) { // 7 days
+                return 'Maximum limit is 10080 minutes (7 days)';
+              }
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                final minutes = int.parse(controller.text);
+                Navigator.of(context).pop(minutes);
+              }
+            },
+            child: const Text('Set'),
+          ),
+        ],
       ),
     );
   }

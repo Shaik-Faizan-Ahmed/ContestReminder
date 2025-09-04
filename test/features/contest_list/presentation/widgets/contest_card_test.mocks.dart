@@ -3,11 +3,9 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i3;
 
-import 'package:contest_reminder/features/alarms/alarm_service.dart' as _i3;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart'
-    as _i2;
+import 'package:contest_reminder/features/alarms/alarm_service.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -24,50 +22,30 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeFlutterLocalNotificationsPlugin_0 extends _i1.SmartFake
-    implements _i2.FlutterLocalNotificationsPlugin {
-  _FakeFlutterLocalNotificationsPlugin_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
 /// A class which mocks [AlarmService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAlarmService extends _i1.Mock implements _i3.AlarmService {
+class MockAlarmService extends _i1.Mock implements _i2.AlarmService {
   MockAlarmService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i2.FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin =>
-      (super.noSuchMethod(
-        Invocation.getter(#flutterLocalNotificationsPlugin),
-        returnValue: _FakeFlutterLocalNotificationsPlugin_0(
-          this,
-          Invocation.getter(#flutterLocalNotificationsPlugin),
-        ),
-      ) as _i2.FlutterLocalNotificationsPlugin);
-
-  @override
-  _i4.Future<void> init() => (super.noSuchMethod(
+  _i3.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i4.Future<void> scheduleAlarm(
+  _i3.Future<void> scheduleAlarm(
     int? id,
     DateTime? scheduledTime,
     String? contestName,
+    int? reminderMinutes,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -76,40 +54,20 @@ class MockAlarmService extends _i1.Mock implements _i3.AlarmService {
             id,
             scheduledTime,
             contestName,
+            reminderMinutes,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 
   @override
-  _i4.Future<void> cancelAlarm(int? id) => (super.noSuchMethod(
+  _i3.Future<void> cancelAlarm(int? id) => (super.noSuchMethod(
         Invocation.method(
           #cancelAlarm,
           [id],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<List<_i2.PendingNotificationRequest>> getPendingNotifications() =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #getPendingNotifications,
-          [],
-        ),
-        returnValue: _i4.Future<List<_i2.PendingNotificationRequest>>.value(
-            <_i2.PendingNotificationRequest>[]),
-      ) as _i4.Future<List<_i2.PendingNotificationRequest>>);
-
-  @override
-  _i4.Future<void> cancelAllAlarms() => (super.noSuchMethod(
-        Invocation.method(
-          #cancelAllAlarms,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

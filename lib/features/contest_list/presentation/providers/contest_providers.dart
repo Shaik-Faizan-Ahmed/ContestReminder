@@ -43,41 +43,40 @@ class ContestList extends _$ContestList {
       
       return filteredContests;
     } catch (e, stackTrace) {
-      print('Error in ContestList.build: $e');
-      print('Stack trace: $stackTrace');
+      
       rethrow;
     }
   }
 
-  Future<void> setReminder(Contest contest) async {
+  Future<void> setReminder(Contest contest, int reminderMinutes) async {
     try {
       final alarmService = ref.read(alarmServiceProvider);
       
       // Check if the contest is in the future
-      if (contest.startTime.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
-        throw Exception('Cannot set reminder for contests starting within 5 minutes');
+      if (contest.startTime.isBefore(DateTime.now().add(Duration(minutes: reminderMinutes)))) {
+        throw Exception('Cannot set reminder for contests starting within $reminderMinutes minutes');
       }
       
       await alarmService.scheduleAlarm(
         contest.hashCode, 
         contest.startTime, 
-        contest.name
+        contest.name,
+        reminderMinutes
       );
       
       // Update the state
-      state = state.whenData((contests) {
-        return [
-          for (final c in contests)
-            if (c.name == contest.name && c.platform == contest.platform)
-              c.copyWith(isReminderSet: true)
-            else
-              c,
-        ];
-      });
+      final contests = await future;
+      state = AsyncData([
+        for (final c in contests)
+          if (c.name == contest.name && c.platform == contest.platform)
+            c.copyWith(isReminderSet: true)
+          else
+            c,
+      ]);
       
-      print('Reminder set for: ${contest.name}');
+      
     } catch (e) {
-      print('Error setting reminder: $e');
+      
       rethrow;
     }
   }
@@ -88,19 +87,18 @@ class ContestList extends _$ContestList {
       await alarmService.cancelAlarm(contest.hashCode);
       
       // Update the state
-      state = state.whenData((contests) {
-        return [
-          for (final c in contests)
-            if (c.name == contest.name && c.platform == contest.platform)
-              c.copyWith(isReminderSet: false)
-            else
-              c,
-        ];
-      });
+      final contests = await future;
+      state = AsyncData([
+        for (final c in contests)
+          if (c.name == contest.name && c.platform == contest.platform)
+            c.copyWith(isReminderSet: false)
+          else
+            c,
+      ]);
       
-      print('Reminder cancelled for: ${contest.name}');
+      
     } catch (e) {
-      print('Error cancelling reminder: $e');
+      
       rethrow;
     }
   }
@@ -130,7 +128,7 @@ class ContestList extends _$ContestList {
       
       state = AsyncData(filteredContests);
     } catch (e, stackTrace) {
-      print('Error refreshing contests: $e');
+      
       state = AsyncError(e, stackTrace);
     }
   }
