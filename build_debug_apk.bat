@@ -38,6 +38,22 @@ if exist "build\app\outputs\flutter-apk\app-debug.apk" (
     for %%A in ("build\app\outputs\flutter-apk\app-debug.apk") do echo %%~zA bytes
     echo.
     echo You can now install this debug APK on your Android device for testing.
+    echo.
+    echo ========================================
+    echo ALARM TESTING INSTRUCTIONS:
+    echo ========================================
+    echo 1. Install the APK on your device
+    echo 2. Grant "Display over other apps" permission when prompted
+    echo 3. Grant notification permissions
+    echo 4. Set a test alarm for 1-2 minutes from now
+    echo 5. Close the app completely
+    echo 6. Wait for the alarm - you should see the alarm screen
+    echo.
+    echo If the alarm screen doesn't show:
+    echo - Check Settings ^> Apps ^> Contest Reminder ^> Special access
+    echo - Enable "Display over other apps"
+    echo - Check that notifications are enabled
+    echo ========================================
 ) else (
     echo ❌ Debug APK build failed! Check the error messages above.
 )

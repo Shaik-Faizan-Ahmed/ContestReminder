@@ -7,7 +7,7 @@ class AlarmService {
   }
 
   Future<void> scheduleAlarm(
-      int id, DateTime scheduledTime, String contestName, int reminderMinutes) async {
+      int id, DateTime scheduledTime, String contestName, int reminderMinutes, String contestUrl) async {
     final alarmSettings = AlarmSettings(
       id: id,
       dateTime: scheduledTime.subtract(Duration(minutes: reminderMinutes)),
@@ -18,11 +18,17 @@ class AlarmService {
       notificationSettings: NotificationSettings(
         title: contestName,
         body: 'Starts in $reminderMinutes minutes!',
+        stopButton: 'Stop Alarm',
+        icon: 'ic_launcher',
       ),
-      androidFullScreenIntent: true,
+      androidFullScreenIntent: true, // This is crucial for showing over lock screen
+      volumeSettings: VolumeSettings.fixed(),
+      payload: contestUrl,
     );
 
+    print('Scheduling alarm with ID: $id for ${scheduledTime.subtract(Duration(minutes: reminderMinutes))}');
     await Alarm.set(alarmSettings: alarmSettings);
+    print('Alarm scheduled successfully');
   }
 
   Future<void> cancelAlarm(int id) async {

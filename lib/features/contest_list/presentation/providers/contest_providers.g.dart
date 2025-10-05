@@ -39,7 +39,7 @@ final alarmServiceProvider = AutoDisposeProvider<AlarmService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AlarmServiceRef = AutoDisposeProviderRef<AlarmService>;
-String _$contestListHash() => r'55771f84eeba01b97c7912e7d76eb11b0e038e45';
+String _$contestListHash() => r'cac6e41da46a5c16f88e729d34a64882ed4f871c';
 
 /// See also [ContestList].
 @ProviderFor(ContestList)

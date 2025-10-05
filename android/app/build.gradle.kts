@@ -31,6 +31,23 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        create("release") {
+            val keyPropertiesFile = rootProject.file("key.properties")
+            if (keyPropertiesFile.exists()) {
+                val keyProperties = keyPropertiesFile.readLines().map { it.split("=") }.associate { it[0] to it[1] }
+                storeFile = if (keyProperties["storeFile"] != null) {
+                    rootProject.file(keyProperties["storeFile"]!!)
+                } else {
+                    rootProject.file("app/upload-keystore.jks")
+                }
+                storePassword = keyProperties["storePassword"]
+                keyAlias = keyProperties["keyAlias"]
+                keyPassword = keyProperties["keyPassword"]
+            }
+        }
+    }
+
     buildTypes {
         getByName("debug") {
             isMinifyEnabled = false
@@ -40,6 +57,7 @@ android {
             isMinifyEnabled = true
             isDebuggable = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

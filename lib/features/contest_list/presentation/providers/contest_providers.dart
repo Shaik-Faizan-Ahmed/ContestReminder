@@ -61,7 +61,8 @@ class ContestList extends _$ContestList {
         contest.hashCode, 
         contest.startTime, 
         contest.name,
-        reminderMinutes
+        reminderMinutes,
+        contest.url
       );
       
       // Update the state
@@ -100,6 +101,68 @@ class ContestList extends _$ContestList {
     } catch (e) {
       
       rethrow;
+    }
+  }
+
+  Future<void> setRemindersForPlatform(String platform, {int reminderMinutes = 15}) async {
+    final contests = await future;
+    final platformUrl = _getPlatformUrl(platform);
+
+    List<Contest> updatedContests = List.from(contests);
+
+    for (int i = 0; i < updatedContests.length; i++) {
+      final contest = updatedContests[i];
+      if (contest.platform == platformUrl && !contest.isReminderSet) {
+        try {
+          final alarmService = ref.read(alarmServiceProvider);
+          if (contest.startTime.isBefore(DateTime.now().add(Duration(minutes: reminderMinutes)))) {
+            throw Exception('Cannot set reminder for contests starting within $reminderMinutes minutes');
+          }
+          await alarmService.scheduleAlarm(
+            contest.hashCode, 
+            contest.startTime, 
+            contest.name,
+            reminderMinutes,
+            contest.url
+          );
+          updatedContests[i] = contest.copyWith(isReminderSet: true);
+        } catch (e) {
+          // Ignore
+        }
+      }
+    }
+    state = AsyncData(updatedContests);
+  }
+
+  Future<void> cancelRemindersForPlatform(String platform) async {
+    final contests = await future;
+    final platformUrl = _getPlatformUrl(platform);
+
+    List<Contest> updatedContests = List.from(contests);
+
+    for (int i = 0; i < updatedContests.length; i++) {
+      final contest = updatedContests[i];
+      if (contest.platform == platformUrl && contest.isReminderSet) {
+        final alarmService = ref.read(alarmServiceProvider);
+        await alarmService.cancelAlarm(contest.hashCode);
+        updatedContests[i] = contest.copyWith(isReminderSet: false);
+      }
+    }
+    state = AsyncData(updatedContests);
+  }
+
+  String _getPlatformUrl(String platform) {
+    switch (platform) {
+      case 'LeetCode':
+        return 'leetcode.com';
+      case 'CodeChef':
+        return 'codechef.com';
+      case 'Codeforces':
+        return 'codeforces.com';
+      case 'HackerRank':
+        return 'hackerrank.com';
+      default:
+        return platform;
     }
   }
 
